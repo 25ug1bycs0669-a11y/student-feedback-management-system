@@ -1,0 +1,77 @@
+{
+  "info": {
+    "name": "Classvoice Student Feedback API",
+    "description": "Core authentication, feedback, and administrator endpoints for the Student Feedback Management System.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "studentToken", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "feedbackId", "value": "" },
+    { "key": "adminEmail", "value": "admin@example.com" },
+    { "key": "adminPassword", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health check",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/health" }
+    },
+    {
+      "name": "Student registration",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["if (pm.response.code === 201) pm.collectionVariables.set('studentToken', pm.response.json().token);"] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Avery Student\",\n  \"email\": \"avery@example.com\",\n  \"studentId\": \"STU-1001\",\n  \"password\": \"secure-pass-123\"\n}" },
+        "url": "{{baseUrl}}/api/auth/register"
+      }
+    },
+    {
+      "name": "Student login",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["if (pm.response.code === 200) pm.collectionVariables.set('studentToken', pm.response.json().token);"] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"avery@example.com\",\n  \"password\": \"secure-pass-123\"\n}" },
+        "url": "{{baseUrl}}/api/auth/login"
+      }
+    },
+    {
+      "name": "Submit feedback",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["if (pm.response.code === 201) pm.collectionVariables.set('feedbackId', pm.response.json().feedback._id);"] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{studentToken}}" }],
+        "body": { "mode": "raw", "raw": "{\n  \"teacherName\": \"Jordan Lee\",\n  \"courseName\": \"Human-centered Design\",\n  \"rating\": 5,\n  \"comment\": \"Thoughtful lessons and helpful feedback.\"\n}" },
+        "url": "{{baseUrl}}/api/feedback"
+      }
+    },
+    {
+      "name": "Student feedback history",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{studentToken}}" }], "url": "{{baseUrl}}/api/feedback/history" }
+    },
+    {
+      "name": "Admin login",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["if (pm.response.code === 200) pm.collectionVariables.set('adminToken', pm.response.json().token);"] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}" },
+        "url": "{{baseUrl}}/api/auth/admin/login"
+      }
+    },
+    {
+      "name": "Admin feedback list",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/feedback" }
+    },
+    {
+      "name": "Feedback statistics",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/feedback/stats" }
+    },
+    {
+      "name": "Delete feedback",
+      "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/feedback/{{feedbackId}}" }
+    }
+  ]
+}
